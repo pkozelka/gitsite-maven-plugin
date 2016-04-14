@@ -47,6 +47,9 @@ public class SiteDeployGitMojo extends AbstractMojo {
     @Parameter(defaultValue = "true", property = "gitsite.keepHistory")
     boolean keepHistory;
 
+    @Parameter(defaultValue = "${project.build.directory}/gitsite-deploy.log")
+    File logfile;
+
     private static final String SCM_PREFIX = "scm:git:";
 
     private void validate() throws MojoExecutionException {
@@ -90,18 +93,41 @@ public class SiteDeployGitMojo extends AbstractMojo {
         cl.addArguments(args);
         final StreamConsumer stdout = new StreamConsumer() {
             public void consumeLine(String line) {
-                getLog().debug(line);
+                debug(line);
             }
         };
         final StreamConsumer stderr = new StreamConsumer() {
             public void consumeLine(String line) {
-                getLog().warn(line);
+                warn(line);
             }
         };
-        getLog().info(String.format("Executing: %s", cl));
+        info(String.format("Executing: %s", cl));
         final int exitCode = CommandLineUtils.executeCommandLine(cl, stdout, stderr);
         if (exitCode != 0) {
             throw new MojoFailureException(String.format("git returned with exit code '%d'", exitCode));
         }
+    }
+
+    private void filelog(String severity, String line) {
+        try {
+            FileUtils.fileAppend(logfile.getAbsolutePath(), String.format("%6s %s%n", severity, line));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void debug(String line) {
+        getLog().debug(line);
+        filelog("DEBUG", line);
+    }
+
+    private void warn(String line) {
+        getLog().warn(line);
+        filelog("WARN", line);
+    }
+
+    private void info(String line) {
+        getLog().info(line);
+        filelog("INFO", line);
     }
 }
