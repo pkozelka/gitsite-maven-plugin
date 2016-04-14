@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="gitsite-maven-plugin" xmlns="http://maven.apache.org/DECORATION/1.4.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/DECORATION/1.4.0 http://maven.apache.org/xsd/decoration-1.4.0.xsd">
+    <bannerLeft>
+        <name></name>
+    </bannerLeft>
+    <skin>
+        <groupId>org.apache.maven.skins</groupId>
+        <artifactId>maven-fluido-skin</artifactId>
+        <version>1.5</version>
+    </skin>
+    <custom>
+        <fluidoSkin>
+            <topBarEnabled>true</topBarEnabled>
+            <navBarStyle>navbar-inverse</navBarStyle>
+            <topBarIcon>
+                <name>code</name>
+                <alt>code.kozelka.net</alt>
+                <href>http://code.kozelka.net/index.html</href>
+            </topBarIcon>
+            <sideBarEnabled>false</sideBarEnabled>
+            <leftColumnClass>span3</leftColumnClass>
+            <bodyColumnClass>span9</bodyColumnClass>
+            <sourceLineNumbersEnabled>true</sourceLineNumbersEnabled>
+            <googlePlusOne/>
+            <breadcrumbDivider>»</breadcrumbDivider>
+            <skipGenerationDate>true</skipGenerationDate>
+        </fluidoSkin>
+    </custom>
+    <publishDate position="right"/>
+    <version position="right"/>
+
+    <body>
+        <breadcrumbs>
+            <item name="gitsite-maven-plugin" href="index.html"/>
+        </breadcrumbs>
+
+        <menu name="Documentation">
+            <item name="Overview" href="index.html"/>
+            <item name="Goals" href="plugin-info.html"/>
+        </menu>
+        <menu name="Reports" ref="reports"/>
+        <links>
+            <item name="Fork me on GitHub" href="${project.scm.url}"/>
+            <item name="Apache" href="http://www.apache.org/"/>
+            <item name="Maven 2" href="http://maven.apache.org/"/>
+        </links>
+    </body>
+    <poweredBy>
+        <logo img="http://maven.apache.org/images/logos/maven-feather.png"
+              href="http://maven.apache.org"
+              name="Apache Maven" position="left"/>
+    </poweredBy>
+</project>

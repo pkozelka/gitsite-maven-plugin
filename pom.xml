@@ -105,10 +105,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
                 <version>3.5</version>
-                <configuration>
-                    <attach>false</attach>
-                    <detail>true</detail>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -215,4 +211,7 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+    <scm>
+        <developerConnection>scm:git:git@bitbucket.org:pkozelka/gitsite-maven-plugin.git</developerConnection>
+    </scm>
 </project>
