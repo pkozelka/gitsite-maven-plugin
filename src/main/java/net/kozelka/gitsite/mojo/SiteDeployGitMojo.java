@@ -22,18 +22,30 @@ import org.codehaus.plexus.util.cli.StreamConsumer;
 @Mojo(name = "gitsite-deploy", defaultPhase = LifecyclePhase.SITE_DEPLOY, requiresProject = true, aggregator = true)
 public class SiteDeployGitMojo extends AbstractMojo {
 
+    /**
+     * The site directory to be deployed. It must be already completely generated.
+     */
     @Parameter(defaultValue = "${project.build.directory}/staging", property = "gitsite.inputDirectory")
     File inputDirectory;
 
     /**
      * Which branch to put the generated site into.
-     * <p>**DANGEROUS** this branch will be replaced, with no history left - make sure you won't loose any data</p>
+     * <p><b>DANGEROUS</b> this branch will be replaced, with no history left - make sure you won't loose any data</p>
      */
     @Parameter(defaultValue = "site", property = "gitsite.branch")
     String gitBranch;
 
+    /**
+     * The SCM URL where the site will be deployed. By default we reuse the current project's scm.
+     */
     @Parameter(defaultValue = "${project.scm.developerConnection}")
     String gitScmUrl;
+
+    /**
+     * Whether to keep previous commits in the site branch. If false, all previous commits will be deleted with each update.
+     */
+    @Parameter(defaultValue = "true", property = "gitsite.keepHistory")
+    boolean keepHistory;
 
     private static final String SCM_PREFIX = "scm:git:";
 
@@ -50,10 +62,20 @@ public class SiteDeployGitMojo extends AbstractMojo {
             FileUtils.deleteDirectory(new File(inputDirectory, ".git"));
             FileUtils.fileWrite(new File(inputDirectory, ".gitattributes").getAbsolutePath(), "* text=auto\n");
             final int fileCount = FileUtils.getFiles(inputDirectory, null, null, false).size();
-            git("init");
-            git("add", "-A", ".");
-            git("commit", "-am", String.format("Publishing site with %d files", fileCount));
-            git("push", gitRemoteUrl, "+master:" + gitBranch);
+            if (keepHistory) {
+                // branch must already exist! TODO: detect that
+                final String origDir = inputDirectory.getAbsolutePath() + ".orig";
+                git("clone", "--branch", gitBranch, "--single-branch", gitRemoteUrl, origDir);
+                FileUtils.rename(new File(origDir, ".git"), new File(inputDirectory, ".git"));
+                git("add", "-A", ".");
+                git("commit", "-am", String.format("Updating site with %d files", fileCount));
+                git("push", gitRemoteUrl);
+            } else {
+                git("init");
+                git("add", "-A", ".");
+                git("commit", "-am", String.format("Creating site with %d files", fileCount));
+                git("push", gitRemoteUrl, "+master:" + gitBranch);
+            }
         } catch (CommandLineException e) {
             throw new MojoExecutionException("git publishing error", e);
         } catch (IOException e) {
