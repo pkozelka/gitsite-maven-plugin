@@ -19,8 +19,8 @@ import org.codehaus.plexus.util.cli.StreamConsumer;
  *
  * @author Petr Kozelka
  */
-@Mojo(name = "gitsite-deploy", defaultPhase = LifecyclePhase.SITE_DEPLOY, requiresProject = true, aggregator = true)
-public class SiteDeployGitMojo extends AbstractMojo {
+@Mojo(name = "deploy", defaultPhase = LifecyclePhase.SITE_DEPLOY, requiresProject = true, aggregator = true)
+public class GitSiteDeployMojo extends AbstractMojo {
 
     /**
      * The site directory to be deployed. It must be already completely generated.
