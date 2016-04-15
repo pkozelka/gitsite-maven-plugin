@@ -38,6 +38,7 @@
 
         <menu name="Documentation">
             <item name="Overview" href="index.html"/>
+            <item name="Usage" href="usage.html"/>
             <item name="Goals" href="plugin-info.html"/>
         </menu>
         <menu name="Reports" ref="reports"/>

@@ -15,7 +15,8 @@ import org.codehaus.plexus.util.cli.Commandline;
 import org.codehaus.plexus.util.cli.StreamConsumer;
 
 /**
- * Pushes staged site into special branch of the same git repository where the project resides.
+ * Pushes prepared static site into a special git branch.
+ * Can be used to simplify maven site publication on GitHub Pages.
  *
  * @author Petr Kozelka
  */
@@ -30,7 +31,6 @@ public class GitSiteDeployMojo extends AbstractMojo {
 
     /**
      * Which branch to put the generated site into.
-     * <p><b>DANGEROUS</b> this branch will be replaced, with no history left - make sure you won't loose any data</p>
      */
     @Parameter(defaultValue = "site", property = "gitsite.branch")
     String gitBranch;
@@ -43,10 +43,14 @@ public class GitSiteDeployMojo extends AbstractMojo {
 
     /**
      * Whether to keep previous commits in the site branch. If false, all previous commits will be deleted with each update.
+     * <p><b>DANGEROUS</b> this removes branch with all its history (when true) - so make sure you use a dedicated branch name !!!</p>
      */
     @Parameter(defaultValue = "true", property = "gitsite.keepHistory")
     boolean keepHistory;
 
+    /**
+     * Where to store log files
+     */
     @Parameter(defaultValue = "${project.build.directory}/gitsite-deploy.log")
     File logfile;
 
