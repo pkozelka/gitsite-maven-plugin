@@ -38,7 +38,7 @@ public class GitSiteDeployMojo extends AbstractMojo {
     /**
      * The SCM URL where the site will be deployed. By default we reuse the current project's scm.
      */
-    @Parameter(defaultValue = "${project.scm.developerConnection}")
+    @Parameter(defaultValue = "${project.scm.developerConnection}", property = "gitsite.gitScmUrl")
     String gitScmUrl;
 
     /**
