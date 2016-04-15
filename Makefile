@@ -7,7 +7,7 @@ site:
 	mvn clean site
 
 site-deploy-first:
-	mvn $(GITSITE_DEPLOY) -Dgitsite.inputDirectory=$(PWD)/target/site -Dgitsite.keepHistory=false
+	mvn $(GITSITE_DEPLOY) -Dgitsite.inputDirectory=$(PWD)/target/site -Dgitsite.keepHistory=false -Dgitsite.gitScmUrl=scm:git:git@bitbucket.org:pkozelka/pkozelka.bitbucket.org.git
 
 site-deploy:
 	mvn $(GITSITE_DEPLOY) -Dgitsite.inputDirectory=$(PWD)/target/site
