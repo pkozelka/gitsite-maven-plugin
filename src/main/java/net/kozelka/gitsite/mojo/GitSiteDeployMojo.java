@@ -2,7 +2,6 @@ package net.kozelka.gitsite.mojo;
 
 import java.io.File;
 import java.io.IOException;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -20,8 +19,8 @@ import org.codehaus.plexus.util.cli.StreamConsumer;
  *
  * @author Petr Kozelka
  */
-@Mojo(name = "deploy", defaultPhase = LifecyclePhase.SITE_DEPLOY, requiresProject = true, aggregator = true)
-public class GitSiteDeployMojo extends AbstractMojo {
+@Mojo(name = "deploy", defaultPhase = LifecyclePhase.SITE_DEPLOY, requiresProject = true)
+public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
 
     /**
      * The site directory to be deployed. It must be already completely generated.
@@ -32,7 +31,7 @@ public class GitSiteDeployMojo extends AbstractMojo {
     /**
      * Which branch to put the generated site into.
      */
-    @Parameter(defaultValue = "site", property = "gitsite.branch")
+    @Parameter(defaultValue = "gitsite", property = "gitsite.branch")
     String gitBranch;
 
     /**
@@ -62,10 +61,27 @@ public class GitSiteDeployMojo extends AbstractMojo {
         }
     }
 
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    @Override
+    protected void executeInRootModule() throws MojoExecutionException, MojoFailureException {
+        System.out.println("ROOT MODULE");
+        System.out.println("executionRootDirectory = " + executionRootDirectory);
         validate();
-        final String gitRemoteUrl = gitScmUrl.substring(SCM_PREFIX.length());
+        saveParameters("inputDirectory", "gitBranch", "gitScmUrl", "keepHistory", "logfile");
+    }
+
+    @Override
+    protected void executeInLastModule() throws MojoExecutionException, MojoFailureException {
+        System.out.println("LAST MODULE");
+        System.out.println("executionRootDirectory = " + executionRootDirectory);
+        final File paramFile = loadParameters();
+        gitSiteDeploy();
+        FileUtils.fileDelete(paramFile.getAbsolutePath());
+    }
+
+    private void gitSiteDeploy() throws MojoExecutionException, MojoFailureException {
         try {
+            // perform the push
+            final String gitRemoteUrl = gitScmUrl.substring(SCM_PREFIX.length());
             FileUtils.deleteDirectory(new File(inputDirectory, ".git"));
             FileUtils.fileWrite(new File(inputDirectory, ".gitattributes").getAbsolutePath(), "* text=auto\n");
             final int fileCount = FileUtils.getFiles(inputDirectory, null, null, false).size();

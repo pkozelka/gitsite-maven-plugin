@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="gitsite-maven-plugin" xmlns="http://maven.apache.org/DECORATION/1.4.0"
+<project name="gitsite-maven-plugin" xmlns="http://maven.apache.org/DECORATION/1.7.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/DECORATION/1.4.0 http://maven.apache.org/xsd/decoration-1.4.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/DECORATION/1.4.0 http://maven.apache.org/xsd/decoration-1.7.0.xsd">
     <bannerLeft>
         <name></name>
     </bannerLeft>
@@ -32,6 +32,11 @@
     <version position="right"/>
 
     <body>
+        <links>
+            <item name="Fork me on GitHub" href="${project.scm.url}"/>
+            <item name="Apache" href="http://www.apache.org/"/>
+            <item name="Maven 2" href="http://maven.apache.org/"/>
+        </links>
         <breadcrumbs>
             <item name="gitsite-maven-plugin" href="index.html"/>
         </breadcrumbs>
@@ -42,11 +47,6 @@
             <item name="Goals" href="plugin-info.html"/>
         </menu>
         <menu name="Reports" ref="reports"/>
-        <links>
-            <item name="Fork me on GitHub" href="${project.scm.url}"/>
-            <item name="Apache" href="http://www.apache.org/"/>
-            <item name="Maven 2" href="http://maven.apache.org/"/>
-        </links>
     </body>
     <poweredBy>
         <logo img="http://maven.apache.org/images/logos/maven-feather.png"
