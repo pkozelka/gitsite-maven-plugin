@@ -87,7 +87,7 @@ and then deploy; the pom.xml configuration is very similar (no need to specify `
 </plugin>
 ```
 
-Not you can deploy the site:
+Now you can deploy the site:
 
 ```
 mvn site-deploy
