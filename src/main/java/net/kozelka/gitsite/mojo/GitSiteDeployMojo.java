@@ -48,7 +48,7 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
     boolean keepHistory;
 
     /**
-     * Where to store log files
+     * Where to store log of git operations.
      */
     @Parameter(defaultValue = "${project.build.directory}/gitsite-deploy.log")
     File logfile;
@@ -63,16 +63,14 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
 
     @Override
     protected void executeInRootModule() throws MojoExecutionException, MojoFailureException {
-        System.out.println("ROOT MODULE");
-        System.out.println("executionRootDirectory = " + executionRootDirectory);
+        getLog().debug("ROOT MODULE - executionRootDirectory = " + executionRootDirectory);
         validate();
         saveParameters("inputDirectory", "gitBranch", "gitScmUrl", "keepHistory", "logfile");
     }
 
     @Override
     protected void executeInLastModule() throws MojoExecutionException, MojoFailureException {
-        System.out.println("LAST MODULE");
-        System.out.println("executionRootDirectory = " + executionRootDirectory);
+        getLog().debug("LAST MODULE - executionRootDirectory = " + executionRootDirectory);
         final File paramFile = loadParameters();
         gitSiteDeploy();
         FileUtils.fileDelete(paramFile.getAbsolutePath());
