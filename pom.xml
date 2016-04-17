@@ -180,6 +180,8 @@
         </license>
     </licenses>
     <scm>
+        <connection>scm:git:https://github.com/pkozelka/gitsite-maven-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:pkozelka/gitsite-maven-plugin.git</developerConnection>
+        <url>https://github.com/pkozelka/gitsite-maven-plugin</url>
     </scm>
 </project>
