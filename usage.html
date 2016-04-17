@@ -102,7 +102,7 @@
               <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">External Links <b class="caret"></b></a>
                 <ul class="dropdown-menu">
-                      <li>      <a href="https://github.com/pkozelka/kozelka-pom/gitsite-maven-plugin"  title="Fork me on GitHub">Fork me on GitHub</a>
+                      <li>      <a href="https://github.com/pkozelka/gitsite-maven-plugin"  title="Fork me on GitHub">Fork me on GitHub</a>
 </li>
       <li>      <a href="http://www.apache.org/"  title="Apache">Apache</a>
 </li>
@@ -174,7 +174,7 @@
 <div class="source"><pre class="prettyprint linenums">&lt;plugin&gt;
     &lt;groupId&gt;net.kozelka.maven&lt;/groupId&gt;
     &lt;artifactId&gt;gitsite-maven-plugin&lt;/artifactId&gt;
-    &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+    &lt;version&gt;0.1.0&lt;/version&gt;
     &lt;executions&gt;
         &lt;execution&gt;
             &lt;id&gt;gitsite-deploy&lt;/id&gt;
@@ -194,7 +194,18 @@
 
 <div class="source">
 <div class="source"><pre class="prettyprint linenums">mvn site-deploy
-</pre></div></div></div>
+</pre></div></div>
+<div class="section">
+<h3><a name="Usage_for_Github_Pages"></a>Usage for Github Pages</h3>
+<p>When publishing with Github Pages, remember to set the target branch to <tt>gh-pages</tt> in the plugin&#x2019;s configuration:</p>
+
+<div class="source">
+<div class="source"><pre class="prettyprint linenums">&lt;configuration&gt;
+    ...
+    &lt;gitBranch&gt;gh-pages&lt;/gitBranch&gt;
+    ...
+&lt;/configuration&gt;
+</pre></div></div></div></div>
 <div class="section">
 <h2><a name="Multi-module_project_with_docs_on_root_only"></a>Multi-module project with docs on root only</h2>
 <p>can be configured the same way as single-module, but it&#x2019;s better to run its site deployment only on the top module:</p>
@@ -217,7 +228,7 @@
 <div class="source"><pre class="prettyprint linenums">&lt;plugin&gt;
     &lt;groupId&gt;net.kozelka.maven&lt;/groupId&gt;
     &lt;artifactId&gt;gitsite-maven-plugin&lt;/artifactId&gt;
-    &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+    &lt;version&gt;0.1.0&lt;/version&gt;
     &lt;executions&gt;
         &lt;execution&gt;
             &lt;id&gt;gitsite-deploy&lt;/id&gt;
