@@ -48,6 +48,18 @@ Now we can run the site deployment:
 mvn site-deploy
 ```
 
+### Usage for Github Pages
+
+When publishing with Github Pages, remember to set the target branch to `gh-pages` in the plugin's configuration:
+
+```
+<configuration>
+    ...
+    <gitBranch>gh-pages</gitBranch>
+    ...
+</configuration>
+```
+
 ## Multi-module project with docs on root only
 
 can be configured the same way as single-module, but it's better to run its site deployment only on the top module:
