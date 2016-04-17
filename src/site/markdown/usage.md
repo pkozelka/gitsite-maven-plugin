@@ -24,7 +24,7 @@ Attach the gitsite's mojo into the `site-deploy` phase so that publishing is per
 <plugin>
     <groupId>net.kozelka.maven</groupId>
     <artifactId>gitsite-maven-plugin</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
     <executions>
         <execution>
             <id>gitsite-deploy</id>
@@ -74,7 +74,7 @@ and then deploy; the pom.xml configuration is very similar (no need to specify `
 <plugin>
     <groupId>net.kozelka.maven</groupId>
     <artifactId>gitsite-maven-plugin</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
     <executions>
         <execution>
             <id>gitsite-deploy</id>
