@@ -82,7 +82,12 @@ public abstract class AbstractMultiModuleMojo extends AbstractMojo {
         final File paramFile = getParamFile();
         try {
             final Properties properties = new Properties();
-            properties.load(new FileInputStream(paramFile));
+            final FileInputStream is = new FileInputStream(paramFile);
+            try {
+                properties.load(is);
+            } finally {
+                is.close();
+            }
             final Set<Object> keys = properties.keySet();
             for (Object key : keys) {
                 final String fieldName = (String) key;
