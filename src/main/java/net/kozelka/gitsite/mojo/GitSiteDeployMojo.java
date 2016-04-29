@@ -42,10 +42,18 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
 
     /**
      * Whether to keep previous commits in the site branch. If false, all previous commits will be deleted with each update.
-     * <p><b>DANGEROUS</b> this removes branch with all its history (when true) - so make sure you use a dedicated branch name !!!</p>
+     * <p><b>DANGEROUS</b>: when false, the <code>gitBranch</code> will be replaced with single commit, and all its history will be dropped.
+     * While this is useful for saving space, you should really make sure that you use a dedicated branch name (and not a code branch)!!!</p>
      */
     @Parameter(defaultValue = "true", property = "gitsite.keepHistory")
     boolean keepHistory;
+
+    /**
+     * Commit message to be used for publishing.
+     * This is passed to {@link String#format(String, Object...)} where first parameter is number of published files; therefore, you can use '%d' placeholder to reference it.
+     */
+    @Parameter(defaultValue = "Publishing ${project.artifactId} site with %d files", property = "gitsite.commitMessage")
+    String commitMessage;
 
     /**
      * Where to store log of git operations.
@@ -65,7 +73,7 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
     protected void executeInRootModule() throws MojoExecutionException, MojoFailureException {
         getLog().debug("ROOT MODULE - executionRootDirectory = " + executionRootDirectory);
         validate();
-        saveParameters("inputDirectory", "gitBranch", "gitScmUrl", "keepHistory", "logfile");
+        saveParameters("inputDirectory", "gitBranch", "gitScmUrl", "keepHistory", "logfile", "commitMessage");
     }
 
     @Override
@@ -91,12 +99,12 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
                 git("clone", "--branch", gitBranch, "--single-branch", gitRemoteUrl, origDir);
                 FileUtils.rename(new File(origDir, ".git"), new File(inputDirectory, ".git"));
                 git("add", "-A", ".");
-                git("commit", "-am", String.format("Updating site with %d files", fileCount));
+                git("commit", "-am", String.format(commitMessage, fileCount));
                 git("push", gitRemoteUrl);
             } else {
                 git("init");
                 git("add", "-A", ".");
-                git("commit", "-am", String.format("Creating site with %d files", fileCount));
+                git("commit", "-am", String.format(commitMessage, fileCount));
                 git("push", gitRemoteUrl, "+master:" + gitBranch);
             }
         } catch (CommandLineException e) {
