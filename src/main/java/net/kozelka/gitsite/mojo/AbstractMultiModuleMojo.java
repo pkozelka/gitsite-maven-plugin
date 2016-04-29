@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -47,11 +48,19 @@ public abstract class AbstractMultiModuleMojo extends AbstractMojo {
     }
 
     private File getParamFile() {
-        return new File(executionRootDirectory, "." + getClass().getName() + ".properties");
+        try {
+            final String s = new File(executionRootDirectory).getCanonicalPath();
+            return new File(String.format("%s/gitsite-%d.properties",
+                System.getProperty("java.io.tmpdir"),
+                s.hashCode()));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     protected File saveParameters(String... fieldNames) throws MojoExecutionException {
         final File paramFile = getParamFile();
+        getLog().debug(String.format("Saving values to %s - fields: %s", paramFile, Arrays.toString(fieldNames)));
         try {
             final Properties properties = new Properties();
             for (String fieldName : fieldNames) {
@@ -68,6 +77,7 @@ public abstract class AbstractMultiModuleMojo extends AbstractMojo {
             } finally {
                 os.close();
             }
+            return paramFile;
         } catch (NoSuchFieldException e) {
             throw new MojoExecutionException("Cannot save parameters", e);
         } catch (IllegalAccessException e) {
@@ -75,12 +85,12 @@ public abstract class AbstractMultiModuleMojo extends AbstractMojo {
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot save parameters", e);
         }
-        return paramFile;
     }
 
     protected File loadParameters() throws MojoExecutionException {
         final File paramFile = getParamFile();
         try {
+            getLog().debug(String.format("Loading values from %s", paramFile));
             final Properties properties = new Properties();
             final FileInputStream is = new FileInputStream(paramFile);
             try {
