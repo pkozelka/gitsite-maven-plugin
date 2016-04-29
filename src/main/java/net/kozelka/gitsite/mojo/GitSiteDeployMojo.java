@@ -73,7 +73,9 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
         getLog().debug("LAST MODULE - executionRootDirectory = " + executionRootDirectory);
         final File paramFile = loadParameters();
         gitSiteDeploy();
-        FileUtils.fileDelete(paramFile.getAbsolutePath());
+        if (!paramFile.delete()) {
+            paramFile.deleteOnExit();
+        }
     }
 
     private void gitSiteDeploy() throws MojoExecutionException, MojoFailureException {
