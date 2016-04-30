@@ -2,8 +2,6 @@ package net.kozelka.utils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import org.apache.maven.plugin.MojoFailureException;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;

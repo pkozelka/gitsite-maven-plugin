@@ -9,8 +9,6 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.cli.CommandLineException;
-import org.codehaus.plexus.util.cli.CommandLineUtils;
-import org.codehaus.plexus.util.cli.Commandline;
 import org.codehaus.plexus.util.cli.StreamConsumer;
 
 /**
@@ -93,19 +91,39 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
             FileUtils.deleteDirectory(new File(inputDirectory, ".git"));
             FileUtils.fileWrite(new File(inputDirectory, ".gitattributes").getAbsolutePath(), "* text=auto\n");
             final int fileCount = FileUtils.getFiles(inputDirectory, null, null, false).size();
+            final ShellExecutor shell = getShellExecutor();
+            boolean pushForce = !keepHistory;
+            final String origDir = inputDirectory.getAbsolutePath() + ".orig";
             if (keepHistory) {
-                // branch must already exist! TODO: detect that
-                final String origDir = inputDirectory.getAbsolutePath() + ".orig";
-                git("clone", "--branch", gitBranch, "--single-branch", gitRemoteUrl, origDir);
+                final ShellExecutor.Result cloneResult = new ShellExecutor.Result();
+                shell.execWithResult(cloneResult, "git", "clone", "--branch", gitBranch, "--single-branch", gitRemoteUrl, origDir);
+                if (cloneResult.getExitCode() != 0) {
+                    for (String line : cloneResult.getStderrLines()) {
+                        final String lline = line.toLowerCase();
+                        if (lline.contains("Could not find remote branch")
+                            || lline.contains(" not found in upstream ")) {
+                            getLog().info(String.format("Branch '%s' does not exist in '%s' - will be created",
+                                gitBranch, gitRemoteUrl));
+                            pushForce = true;
+                            break;
+                        }
+                    }
+                    if (!pushForce) {
+                        throw new MojoExecutionException(String.format("git exited with code %d", cloneResult.getExitCode()));
+                    }
+                }
+            }
+            if (!pushForce) {
                 FileUtils.rename(new File(origDir, ".git"), new File(inputDirectory, ".git"));
-                git("add", "-A", ".");
-                git("commit", "-am", String.format(commitMessage, fileCount));
-                git("push", gitRemoteUrl);
+                shell.exec("git", "add", "-A", ".");
+                shell.exec("git", "commit", "-am", String.format(commitMessage, fileCount));
+                shell.exec("git", "push", gitRemoteUrl);
             } else {
-                git("init");
-                git("add", "-A", ".");
-                git("commit", "-am", String.format(commitMessage, fileCount));
-                git("push", gitRemoteUrl, "+master:" + gitBranch);
+                shell.exec("git", "init");
+                shell.exec("git", "add", "-A", ".");
+                shell.exec("git", "commit", "-am", String.format(commitMessage, fileCount));
+                shell.exec("git", "remote", "add", "origin", gitRemoteUrl);
+                shell.exec("git", "push", "origin", "+master:" + gitBranch, "--set-upstream");
             }
         } catch (CommandLineException e) {
             throw new MojoExecutionException("git publishing error", e);
@@ -114,26 +132,28 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
         }
     }
 
-    private void git(String... args) throws CommandLineException, MojoFailureException {
-        final Commandline cl = new Commandline();
-        cl.setWorkingDirectory(inputDirectory);
-        cl.setExecutable("git");
-        cl.addArguments(args);
-        final StreamConsumer stdout = new StreamConsumer() {
+    private ShellExecutor getShellExecutor() {
+        final ShellExecutor shell = new ShellExecutor();
+        shell.setInfo(new StreamConsumer() {
             public void consumeLine(String line) {
-                debug(line);
+                getLog().info(line);
+                filelog("INFO", line);
             }
-        };
-        final StreamConsumer stderr = new StreamConsumer() {
+        });
+        shell.setStderr(new StreamConsumer() {
             public void consumeLine(String line) {
-                warn(line);
+                getLog().warn(line);
+                filelog("WARN", line);
             }
-        };
-        info(String.format("Executing: %s", cl));
-        final int exitCode = CommandLineUtils.executeCommandLine(cl, stdout, stderr);
-        if (exitCode != 0) {
-            throw new MojoFailureException(String.format("git returned with exit code '%d'", exitCode));
-        }
+        });
+        shell.setStdout(new StreamConsumer() {
+            public void consumeLine(String line) {
+                getLog().debug(line);
+                filelog("DEBUG", line);
+            }
+        });
+        shell.setWorkingDirectory(inputDirectory);
+        return shell;
     }
 
     private void filelog(String severity, String line) {
@@ -142,20 +162,5 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private void debug(String line) {
-        getLog().debug(line);
-        filelog("DEBUG", line);
-    }
-
-    private void warn(String line) {
-        getLog().warn(line);
-        filelog("WARN", line);
-    }
-
-    private void info(String line) {
-        getLog().info(line);
-        filelog("INFO", line);
     }
 }

@@ -28,7 +28,7 @@
                             <goal>deploy</goal>
                         </goals>
                         <configuration>
-                            <keepHistory>false</keepHistory>
+                            <keepHistory>true</keepHistory>
                             <inputDirectory>${project.reporting.outputDirectory}</inputDirectory>
                             <gitScmUrl>scm:git:${project.build.directory}/gitsiterepo/.git</gitScmUrl>
                             <gitBranch>${project.artifactId}/gitsite</gitBranch>
