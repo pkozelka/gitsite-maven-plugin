@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<title>IntegrationTestUtils xref</title>
+<link type="text/css" rel="stylesheet" href="../stylesheet.css" />
+</head>
+<body>
+<div id="overview"><a href="../../testapidocs/it/IntegrationTestUtils.html">View Javadoc</a></div><pre>
+<a class="jxr_linenumber" name="L1" href="#L1">1</a>   <strong class="jxr_keyword">package</strong> it;
+<a class="jxr_linenumber" name="L2" href="#L2">2</a>   
+<a class="jxr_linenumber" name="L3" href="#L3">3</a>   <strong class="jxr_keyword">import</strong> java.io.File;
+<a class="jxr_linenumber" name="L4" href="#L4">4</a>   <strong class="jxr_keyword">import</strong> java.io.IOException;
+<a class="jxr_linenumber" name="L5" href="#L5">5</a>   <strong class="jxr_keyword">import</strong> java.util.Date;
+<a class="jxr_linenumber" name="L6" href="#L6">6</a>   <strong class="jxr_keyword">import</strong> net.kozelka.gitsite.utils.ShellExecutor;
+<a class="jxr_linenumber" name="L7" href="#L7">7</a>   <strong class="jxr_keyword">import</strong> org.codehaus.plexus.util.FileUtils;
+<a class="jxr_linenumber" name="L8" href="#L8">8</a>   <strong class="jxr_keyword">import</strong> org.codehaus.plexus.util.cli.CommandLineException;
+<a class="jxr_linenumber" name="L9" href="#L9">9</a>   
+<a class="jxr_linenumber" name="L10" href="#L10">10</a>  <strong class="jxr_keyword">class</strong> <a href="../it/IntegrationTestUtils.html">IntegrationTestUtils</a> {
+<a class="jxr_linenumber" name="L11" href="#L11">11</a>  
+<a class="jxr_linenumber" name="L12" href="#L12">12</a>      <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> createGitRepo(File gitwc, String branchToPrefill) <strong class="jxr_keyword">throws</strong> CommandLineException, IOException {
+<a class="jxr_linenumber" name="L13" href="#L13">13</a>          <strong class="jxr_keyword">final</strong> ShellExecutor shell = <strong class="jxr_keyword">new</strong> ShellExecutor();
+<a class="jxr_linenumber" name="L14" href="#L14">14</a>          shell.exec(<span class="jxr_string">"git"</span>, <span class="jxr_string">"init"</span>, gitwc.getAbsolutePath());
+<a class="jxr_linenumber" name="L15" href="#L15">15</a>          <strong class="jxr_keyword">final</strong> File helloTxtFile = <strong class="jxr_keyword">new</strong> File(gitwc, <span class="jxr_string">"Hello.txt"</span>);
+<a class="jxr_linenumber" name="L16" href="#L16">16</a>          FileUtils.fileWrite(helloTxtFile, <span class="jxr_string">"Hello world\n"</span>);
+<a class="jxr_linenumber" name="L17" href="#L17">17</a>          shell.setWorkingDirectory(gitwc);
+<a class="jxr_linenumber" name="L18" href="#L18">18</a>          shell.exec(<span class="jxr_string">"git"</span>, <span class="jxr_string">"add"</span>, <span class="jxr_string">"-A"</span>);
+<a class="jxr_linenumber" name="L19" href="#L19">19</a>          shell.exec(<span class="jxr_string">"git"</span>, <span class="jxr_string">"commit"</span>, <span class="jxr_string">"-am"</span>, <span class="jxr_string">"initial commit"</span>);
+<a class="jxr_linenumber" name="L20" href="#L20">20</a>          shell.exec(<span class="jxr_string">"git"</span>, <span class="jxr_string">"checkout"</span>, <span class="jxr_string">"-b"</span>, branchToPrefill);
+<a class="jxr_linenumber" name="L21" href="#L21">21</a>          <strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">int</strong> i=1; i&lt;=5; i++) {
+<a class="jxr_linenumber" name="L22" href="#L22">22</a>              FileUtils.fileAppend(helloTxtFile.getAbsolutePath(),
+<a class="jxr_linenumber" name="L23" href="#L23">23</a>                  String.format(<span class="jxr_string">"%s commit %d into %s%n"</span>,
+<a class="jxr_linenumber" name="L24" href="#L24">24</a>                      <strong class="jxr_keyword">new</strong> Date(), i, branchToPrefill));
+<a class="jxr_linenumber" name="L25" href="#L25">25</a>              shell.exec(<span class="jxr_string">"git"</span>, <span class="jxr_string">"commit"</span>, <span class="jxr_string">"-am"</span>, <span class="jxr_string">"commit no."</span> + i);
+<a class="jxr_linenumber" name="L26" href="#L26">26</a>          }
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>          shell.exec(<span class="jxr_string">"git"</span>, <span class="jxr_string">"config"</span>, <span class="jxr_string">"receive.denyCurrentBranch"</span>, <span class="jxr_string">"warn"</span>);
+<a class="jxr_linenumber" name="L28" href="#L28">28</a>      }
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>  }
+</pre>
+<hr/>
+<div id="footer">Copyright &#169; 2016 <a href="http://petr.kozelka.net">Petr Kozelka</a>. All rights reserved.</div>
+</body>
+</html>
