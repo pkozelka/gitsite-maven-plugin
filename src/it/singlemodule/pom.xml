@@ -30,7 +30,7 @@
                         <configuration>
                             <keepHistory>true</keepHistory>
                             <inputDirectory>${project.reporting.outputDirectory}</inputDirectory>
-                            <gitScmUrl>scm:git:${project.build.directory}/gitsiterepo/.git</gitScmUrl>
+                            <gitScmUrl>scm:git:file://${project.build.directory}/gitsiterepo/.git</gitScmUrl>
                             <gitBranch>${project.artifactId}/gitsite</gitBranch>
                         </configuration>
                     </execution>

@@ -17,11 +17,13 @@ class IntegrationTestUtils {
         shell.setWorkingDirectory(gitwc);
         shell.exec("git", "add", "-A");
         shell.exec("git", "commit", "-am", "initial commit");
-        shell.exec("git", "branch", branchToPrefill);
+        shell.exec("git", "checkout", "-b", branchToPrefill);
         for (int i=1; i<=5; i++) {
             FileUtils.fileAppend(helloTxtFile.getAbsolutePath(),
                 String.format("%s commit %d into %s%n",
                     new Date(), i, branchToPrefill));
+            shell.exec("git", "commit", "-am", "commit no." + i);
         }
+        shell.exec("git", "config", "receive.denyCurrentBranch", "warn");
     }
 }
