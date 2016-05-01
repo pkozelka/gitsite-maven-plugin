@@ -19,7 +19,7 @@ import org.codehaus.plexus.util.cli.StreamConsumer;
  *
  * @author Petr Kozelka
  */
-@Mojo(name = "deploy", defaultPhase = LifecyclePhase.SITE_DEPLOY, requiresProject = true)
+@Mojo(name = "deploy", defaultPhase = LifecyclePhase.SITE_DEPLOY)
 public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
 
     /**
@@ -56,10 +56,20 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
     String commitMessage;
 
     /**
-     * Where to store log of git operations.
+     * Where to store log of shell executions.
      */
     @Parameter(defaultValue = "${project.build.directory}/gitsite-deploy.log")
     File logfile;
+
+    /**
+     * Subdirectory for placing the site's content.
+     * <p>
+     * Typically, we place content on the root. However, in some cases, we need to keep multiple static sites under one git-based hosting.
+     * Sample use-cases are <b>multiple versions</b> and <b>Bitbucket hosting</b>.
+     * </p>
+     */
+    @Parameter(defaultValue = ".", property = "gitsite.subdir")
+    String subdir;
 
     private static final String SCM_PREFIX = "scm:git:";
 
@@ -87,7 +97,6 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
     }
 
     private void gitSiteDeploy() throws MojoExecutionException, MojoFailureException {
-        final String subdir = ".";
         final File workDir = new File(inputDirectory.getAbsolutePath() + ".work");
         workDir.mkdirs();
         final ShellExecutor shell = getShellExecutor();
