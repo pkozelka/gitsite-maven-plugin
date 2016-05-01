@@ -3,6 +3,7 @@ package net.kozelka.gitsite.mojo;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.StringTokenizer;
 import net.kozelka.gitsite.utils.ShellExecutor;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -70,6 +71,12 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
      */
     @Parameter(defaultValue = ".", property = "gitsite.subdir")
     String subdir;
+
+    /**
+     * Comma-separated list of roots for subdirs.
+     */
+    @Parameter(defaultValue = "VERSION,BRANCH", property = "gitsite.roots")
+    String roots;
 
     private static final String SCM_PREFIX = "scm:git:";
 
@@ -140,11 +147,18 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
 
             // move site to the subdir
             final File targetArea = new File(workDir, subdir).getCanonicalFile();
-            final String excludes = ".git/**";
-            final List<File> filesToDelete = FileUtils.getFiles(targetArea.getAbsoluteFile(), null, excludes);
-            getLog().info("Deleting files: " + filesToDelete.size());
+            final StringBuilder excludes = new StringBuilder(".git/**");
+            //TODO: should we care about exclussions only when rendering the root site?
+            for (StringTokenizer tok = new StringTokenizer(roots); tok.hasMoreTokens(); ) {
+                final String root = tok.nextToken();
+                excludes.append(",");
+                excludes.append(root);
+                excludes.append("/**");
+            }
+            final List<File> filesToDelete = FileUtils.getFiles(targetArea.getAbsoluteFile(), null, excludes.toString());
+            getLog().info(String.format("Deleting %d files - excluded '%s'", filesToDelete.size(), excludes));
             for (File file : filesToDelete) {
-                getLog().info("Deleting file: " + file);
+                getLog().debug("Deleting file: " + file);
                 FileUtils.fileDelete(file.getAbsolutePath());
             }
             FileUtils.copyDirectoryStructure(inputDirectory, targetArea);
