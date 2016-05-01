@@ -11,7 +11,7 @@ import org.codehaus.plexus.util.cli.StreamConsumer;
 
 public class ShellExecutor {
     private File workingDirectory;
-    private StreamConsumer info;
+    private StreamConsumer info = new DefaultConsumer();
     private StreamConsumer stdout = new DefaultConsumer();
     private StreamConsumer stderr = new DefaultConsumer();
 
@@ -33,10 +33,12 @@ public class ShellExecutor {
 
     public void exec(String executable, String... args) throws CommandLineException {
         final Commandline cl = new Commandline();
-        cl.setWorkingDirectory(workingDirectory);
+        if (workingDirectory != null) {
+            cl.setWorkingDirectory(workingDirectory);
+        }
         cl.setExecutable(executable);
         cl.addArguments(args);
-        info.consumeLine(String.format("Executing: %s", cl));
+        info.consumeLine(String.format("Executing: %s", cl.toString()));
         final int exitCode = CommandLineUtils.executeCommandLine(cl, stdout, stderr);
         if (exitCode != 0) {
             throw new CommandLineException(String.format("%s returned with exit code '%d'", executable, exitCode));
