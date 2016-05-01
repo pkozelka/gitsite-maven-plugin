@@ -86,6 +86,67 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
     }
 
     private void gitSiteDeploy() throws MojoExecutionException, MojoFailureException {
+        final String subdir = ".";
+        final String workDir = inputDirectory.getAbsolutePath() + ".work";
+        final ShellExecutor shell = getShellExecutor();
+        final String gitRemoteUrl = gitScmUrl.substring(SCM_PREFIX.length());
+
+        try {
+            boolean pushForce = !keepHistory;
+
+            // clone or init site.wc
+            // - clone only if keepHistory or subdir
+            boolean needClone = keepHistory || !subdir.equals(".");
+            if (needClone) {
+                final ShellExecutor.Result cloneResult = new ShellExecutor.Result();
+                shell.execWithResult(cloneResult, "git", "clone", "--branch", gitBranch, "--single-branch", gitRemoteUrl, workDir);
+                if (cloneResult.getExitCode() != 0) {
+                    for (String line : cloneResult.getStderrLines()) {
+                        final String lline = line.toLowerCase();
+                        if (lline.contains("Could not find remote branch")
+                            || lline.contains(" not found in upstream ")) {
+                            getLog().info(String.format("Branch '%s' does not exist in '%s' - will be created",
+                                gitBranch, gitRemoteUrl));
+                            pushForce = true;
+                            break;
+                        }
+                    }
+                    if (!pushForce) {
+                        throw new MojoExecutionException(String.format("git exited with code %d", cloneResult.getExitCode()));
+                    }
+                }
+            } else {
+                shell.exec("git", "init", workDir);
+                shell.exec("git", "branch", "-M", "master", gitBranch);
+                shell.exec("git", "remote", "add", "origin", gitRemoteUrl);
+            }
+
+            // move site to the subdir
+            final File targetArea = new File(workDir, subdir);
+            FileUtils.deleteDirectory(targetArea); //TODO carefully clean target area
+            FileUtils.copyDirectoryStructure(inputDirectory, targetArea);
+
+            // commit
+            FileUtils.fileWrite(new File(workDir, ".gitattributes").getAbsolutePath(), "* text=auto\n");
+            shell.exec("git", "add", "-A", ".");
+            final int fileCount = FileUtils.getFiles(inputDirectory, null, null, false).size();
+            shell.exec("git", "commit", "-am", String.format(commitMessage, fileCount));
+
+            // push or push-force
+            if (keepHistory) {
+                shell.exec("git", "push");
+            } else {
+                shell.exec("git", "push", "origin", gitBranch, "--force", "--set-upstream");
+            }
+
+        } catch (CommandLineException e) {
+            throw new MojoExecutionException("git publishing error", e);
+        } catch (IOException e) {
+            throw new MojoExecutionException("git publishing error", e);
+        }
+    }
+
+    private void gitSiteDeployOld() throws MojoExecutionException, MojoFailureException {
         try {
             // perform the push
             final String gitRemoteUrl = gitScmUrl.substring(SCM_PREFIX.length());
@@ -121,9 +182,9 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
                 shell.exec("git", "push", gitRemoteUrl);
             } else {
                 shell.exec("git", "init");
+                shell.exec("git", "remote", "add", "origin", gitRemoteUrl);
                 shell.exec("git", "add", "-A", ".");
                 shell.exec("git", "commit", "-am", String.format(commitMessage, fileCount));
-                shell.exec("git", "remote", "add", "origin", gitRemoteUrl);
                 shell.exec("git", "push", "origin", "+master:" + gitBranch, "--set-upstream");
             }
         } catch (CommandLineException e) {
