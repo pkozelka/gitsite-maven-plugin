@@ -3,7 +3,6 @@ package net.kozelka.gitsite.utils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.maven.plugin.MojoFailureException;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.codehaus.plexus.util.cli.Commandline;
@@ -32,7 +31,7 @@ public class ShellExecutor {
         this.stderr = stderr;
     }
 
-    public void exec(String executable, String... args) throws CommandLineException, MojoFailureException {
+    public void exec(String executable, String... args) throws CommandLineException {
         final Commandline cl = new Commandline();
         cl.setWorkingDirectory(workingDirectory);
         cl.setExecutable(executable);
@@ -40,11 +39,11 @@ public class ShellExecutor {
         info.consumeLine(String.format("Executing: %s", cl));
         final int exitCode = CommandLineUtils.executeCommandLine(cl, stdout, stderr);
         if (exitCode != 0) {
-            throw new MojoFailureException(String.format("%s returned with exit code '%d'", executable, exitCode));
+            throw new CommandLineException(String.format("%s returned with exit code '%d'", executable, exitCode));
         }
     }
 
-    public void execWithResult(final Result result, String executable, String... args) throws CommandLineException, MojoFailureException {
+    public void execWithResult(final Result result, String executable, String... args) throws CommandLineException {
         final Commandline cl = new Commandline();
         cl.setWorkingDirectory(workingDirectory);
         cl.setExecutable(executable);
