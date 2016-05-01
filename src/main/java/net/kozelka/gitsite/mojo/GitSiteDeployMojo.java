@@ -2,6 +2,7 @@ package net.kozelka.gitsite.mojo;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import net.kozelka.gitsite.utils.ShellExecutor;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -122,8 +123,12 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
             }
 
             // move site to the subdir
-            final File targetArea = new File(workDir, subdir);
-            FileUtils.deleteDirectory(targetArea); //TODO carefully clean target area
+            final File targetArea = new File(workDir, subdir).getCanonicalFile();
+            final String excludes = ".git/**";
+            final List<File> filesToDelete = FileUtils.getFiles(targetArea, null, excludes, true);
+            for (File file : filesToDelete) {
+                FileUtils.fileDelete(file.getAbsolutePath());
+            }
             FileUtils.copyDirectoryStructure(inputDirectory, targetArea);
 
             // commit
