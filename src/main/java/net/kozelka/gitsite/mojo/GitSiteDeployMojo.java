@@ -149,7 +149,7 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
             final File targetArea = new File(workDir, subdir).getCanonicalFile();
             final StringBuilder excludes = new StringBuilder(".git/**");
             //TODO: should we care about exclussions only when rendering the root site?
-            for (StringTokenizer tok = new StringTokenizer(roots); tok.hasMoreTokens(); ) {
+            for (StringTokenizer tok = new StringTokenizer(roots, ","); tok.hasMoreTokens(); ) {
                 final String root = tok.nextToken();
                 excludes.append(",");
                 excludes.append(root);
