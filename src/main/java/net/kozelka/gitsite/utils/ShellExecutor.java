@@ -1,4 +1,4 @@
-package net.kozelka.gitsite.mojo;
+package net.kozelka.gitsite.utils;
 
 import java.io.File;
 import java.util.ArrayList;
