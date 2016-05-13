@@ -1,7 +1,12 @@
 package net.kozelka.gitsite.mojo;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 import net.kozelka.gitsite.utils.ShellExecutor;
@@ -11,6 +16,7 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.StreamConsumer;
 
@@ -71,6 +77,13 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
      */
     @Parameter(defaultValue = ".", property = "gitsite.subdir")
     String subdir;
+
+    /**
+     * Name of the file that will contain simple listing of subdirs.
+     * The listing is alphabetically sorted, line separated and each subdir is listed only once.
+     */
+    @Parameter(defaultValue = ".gitsite.index.txt", property = "gitsite.index")
+    String index;
 
     /**
      * Comma-separated list of roots for subdirs.
@@ -165,6 +178,9 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
             }
             FileUtils.copyDirectoryStructure(inputDirectory, targetArea);
 
+            // update subdir index
+            updateIndex(new File(workDir, index), subdir);
+
             // commit
             FileUtils.fileWrite(new File(workDir, ".gitattributes").getAbsolutePath(), "* text=auto\n");
             shell.exec("git", "add", "-A", ".");
@@ -182,6 +198,24 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
             throw new MojoExecutionException("git publishing error", e);
         } catch (IOException e) {
             throw new MojoExecutionException("git publishing error", e);
+        }
+    }
+
+    private static void updateIndex(File indexFile, String subdir) throws IOException {
+        final String content = indexFile.exists() ? FileUtils.fileRead(indexFile, "UTF-8") : "";
+        final List<String> subdirIndex = new ArrayList<String>(Arrays.asList(content.split("\n")));
+        subdirIndex.add(subdir);
+        Collections.sort(subdirIndex);
+        final BufferedWriter wr = new BufferedWriter(new FileWriter(indexFile));
+        try {
+            FileUtils.fileWrite(indexFile, "UTF-8");
+            for (String item : subdirIndex) {
+                if(item.trim().length() == 0) continue;
+                wr.write(item);
+                wr.newLine();
+            }
+        } finally {
+            wr.close();
         }
     }
 
