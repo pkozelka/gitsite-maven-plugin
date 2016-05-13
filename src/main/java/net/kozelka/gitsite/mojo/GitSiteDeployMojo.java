@@ -147,6 +147,8 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
 
             // move site to the subdir
             final File targetArea = new File(workDir, subdir).getCanonicalFile();
+            targetArea.mkdirs();
+            getLog().debug("Moving site into " + targetArea);
             final StringBuilder excludes = new StringBuilder(".git/**");
             //TODO: should we care about exclussions only when rendering the root site?
             for (StringTokenizer tok = new StringTokenizer(roots, ","); tok.hasMoreTokens(); ) {
