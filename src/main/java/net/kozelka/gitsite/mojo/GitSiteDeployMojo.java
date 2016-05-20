@@ -208,11 +208,15 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
         Collections.sort(subdirIndex);
         final BufferedWriter wr = new BufferedWriter(new FileWriter(indexFile));
         try {
-            FileUtils.fileWrite(indexFile, "UTF-8");
             for (String item : subdirIndex) {
                 if(item.trim().length() == 0) continue;
-                wr.write(item);
-                wr.newLine();
+                final File subdirVerify = new File(indexFile.getParentFile(), item).getAbsoluteFile();
+                if (subdirVerify.isDirectory()) {
+                    wr.write(item);
+                    wr.newLine();
+                } else {
+                    System.err.printf("WARN: removing %s from index%n", item);
+                }
             }
         } finally {
             wr.close();
