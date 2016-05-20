@@ -124,6 +124,7 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
 
         try {
             boolean pushForce = !keepHistory;
+            subcontext = subcontext == null ? "" : subcontext;
 
             // clone or init site.wc
             // - clone only if keepHistory or subcontext
@@ -204,6 +205,8 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
         final String content = indexFile.exists() ? FileUtils.fileRead(indexFile, "UTF-8") : "";
         final List<String> subdirIndex = new ArrayList<String>(Arrays.asList(content.split("\n")));
         subdirIndex.add(newSubcontext);
+        System.out.println("newSubcontext = " + newSubcontext);
+        System.out.println("subdirIndex = " + subdirIndex);
         Collections.sort(subdirIndex);
         final BufferedWriter wr = new BufferedWriter(new FileWriter(indexFile));
         try {
