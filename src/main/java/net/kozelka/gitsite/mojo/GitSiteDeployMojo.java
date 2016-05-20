@@ -129,10 +129,14 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
             // clone or init site.wc
             // - clone only if keepHistory or subdir
             boolean needClone = keepHistory || !subdir.equals(".");
+            final String localBranch;
             if (needClone) {
                 final ShellExecutor.Result cloneResult = new ShellExecutor.Result();
                 shell.execWithResult(cloneResult, "git", "clone", "--branch", gitBranch, "--single-branch", gitRemoteUrl, ".");
-                if (cloneResult.getExitCode() != 0) {
+                if (cloneResult.getExitCode() == 0) {
+                    localBranch = gitBranch;
+                } else {
+                    localBranch = "master";
                     for (String line : cloneResult.getStderrLines()) {
                         final String lline = line.toLowerCase();
                         if (lline.contains("Could not find remote branch")
@@ -147,16 +151,12 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
                         throw new MojoExecutionException(String.format("git exited with code %d", cloneResult.getExitCode()));
                     }
                 }
+            } else {
+                shell.exec("git", "init");
+                shell.exec("git", "remote", "add", "origin", gitRemoteUrl);
+                localBranch = "master";
             }
 
-            final String localBranch;
-            if (pushForce){
-                shell.exec("git", "init");
-                localBranch = "master";
-                shell.exec("git", "remote", "add", "origin", gitRemoteUrl);
-            } else {
-                localBranch = gitBranch;
-            }
 
             // move site to the subdir
             final File targetArea = new File(workDir, subdir).getCanonicalFile();
