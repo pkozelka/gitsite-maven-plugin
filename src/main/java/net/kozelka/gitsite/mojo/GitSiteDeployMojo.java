@@ -16,7 +16,6 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.codehaus.plexus.util.FileUtils;
-import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.StreamConsumer;
 
@@ -75,12 +74,12 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
      * Sample use-cases are <b>multiple versions</b> and <b>Bitbucket hosting</b>.
      * </p>
      */
-    @Parameter(defaultValue = ".", property = "gitsite.subdir")
-    String subdir;
+    @Parameter(defaultValue = "", property = "gitsite.subcontext")
+    String subcontext;
 
     /**
-     * Name of the file that will contain simple listing of subdirs.
-     * The listing is alphabetically sorted, line separated and each subdir is listed only once.
+     * Name of the file that will contain simple listing of subcontexts.
+     * The listing is alphabetically sorted, line separated and each subcontext is listed only once.
      */
     @Parameter(defaultValue = ".gitsite.index.txt", property = "gitsite.index")
     String index;
@@ -127,8 +126,8 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
             boolean pushForce = !keepHistory;
 
             // clone or init site.wc
-            // - clone only if keepHistory or subdir
-            boolean needClone = keepHistory || !subdir.equals(".");
+            // - clone only if keepHistory or subcontext
+            boolean needClone = keepHistory || !subcontext.equals("");
             final String localBranch;
             if (needClone) {
                 final ShellExecutor.Result cloneResult = new ShellExecutor.Result();
@@ -158,8 +157,8 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
             }
 
 
-            // move site to the subdir
-            final File targetArea = new File(workDir, subdir).getCanonicalFile();
+            // move site to the subcontext
+            final File targetArea = new File(workDir, "." + subcontext).getCanonicalFile();
             targetArea.mkdirs();
             getLog().debug("Moving site into " + targetArea);
             final StringBuilder excludes = new StringBuilder(".git/**");
@@ -178,8 +177,8 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
             }
             FileUtils.copyDirectoryStructure(inputDirectory, targetArea);
 
-            // update subdir index
-            updateIndex(new File(workDir, index), subdir);
+            // update subcontext index
+            updateIndex(new File(workDir, index), subcontext);
 
             // commit
             FileUtils.fileWrite(new File(workDir, ".gitattributes").getAbsolutePath(), "* text=auto\n");
@@ -201,21 +200,21 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
         }
     }
 
-    private static void updateIndex(File indexFile, String subdir) throws IOException {
+    private static void updateIndex(File indexFile, String newSubcontext) throws IOException {
         final String content = indexFile.exists() ? FileUtils.fileRead(indexFile, "UTF-8") : "";
         final List<String> subdirIndex = new ArrayList<String>(Arrays.asList(content.split("\n")));
-        subdirIndex.add(subdir);
+        subdirIndex.add(newSubcontext);
         Collections.sort(subdirIndex);
         final BufferedWriter wr = new BufferedWriter(new FileWriter(indexFile));
         try {
-            for (String item : subdirIndex) {
-                if(item.trim().length() == 0) continue;
-                final File subdirVerify = new File(indexFile.getParentFile(), item).getAbsoluteFile();
+            for (String subcontext : subdirIndex) {
+                if(subcontext.trim().length() == 0) continue;
+                final File subdirVerify = new File(indexFile.getParentFile(), "." + subcontext).getCanonicalFile();
                 if (subdirVerify.isDirectory()) {
-                    wr.write(item);
+                    wr.write(subcontext);
                     wr.newLine();
                 } else {
-                    System.err.printf("WARN: removing %s from index%n", item);
+                    System.err.printf("WARN: removing %s from index%n", subcontext);
                 }
             }
         } finally {
