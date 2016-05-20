@@ -188,10 +188,10 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
             shell.exec("git", "commit", "-am", String.format(commitMessage, fileCount));
 
             // push or push-force
-            if (keepHistory) {
-                shell.exec("git", "push", "origin", localBranch + ":" + gitBranch);
-            } else {
+            if (pushForce) {
                 shell.exec("git", "push", "origin", localBranch + ":" + gitBranch, "--force", "--set-upstream");
+            } else {
+                shell.exec("git", "push", "origin", localBranch + ":" + gitBranch);
             }
 
         } catch (CommandLineException e) {
