@@ -137,6 +137,7 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
                     localBranch = gitBranch;
                 } else {
                     localBranch = "master";
+                    boolean networkProblem = true;
                     for (String line : cloneResult.getStderrLines()) {
                         final String lline = line.toLowerCase();
                         if (lline.contains("Could not find remote branch")
@@ -144,10 +145,11 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
                             getLog().info(String.format("Branch '%s' does not exist in '%s' - will be created",
                                 gitBranch, gitRemoteUrl));
                             pushForce = true;
+                            networkProblem = false;
                             break;
                         }
                     }
-                    if (!pushForce) {
+                    if (networkProblem) {
                         throw new MojoExecutionException(String.format("git exited with code %d", cloneResult.getExitCode()));
                     }
                 }
