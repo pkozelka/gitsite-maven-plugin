@@ -9,7 +9,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.kozelka.gitsite.utils.ShellExecutor;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -137,8 +136,7 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
                 if (cloneResult.getExitCode() == 0) {
                     localBranch = gitBranch;
                 } else {
-                    boolean branchNotFound = containsMessage(cloneResult.getStderrLines(),
-                        Pattern.compile("could not find remote branch\\| not found in upstream "));
+                    boolean branchNotFound = cloneResult.stderrContains(Pattern.compile(".*could not find remote branch.*\\|.* not found in upstream .*"));
                     if (! branchNotFound) {
                         throw new MojoExecutionException(String.format("git exited with code %d", cloneResult.getExitCode()));
                     }
@@ -180,13 +178,18 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
             FileUtils.fileWrite(new File(workDir, ".gitattributes").getAbsolutePath(), "* text=auto\n");
             shell.exec("git", "add", "-A", ".");
             final int fileCount = FileUtils.getFiles(inputDirectory, null, null, false).size();
-            shell.exec("git", "commit", "-am", String.format(commitMessage, fileCount));
-
-            // push or push-force
-            if (pushForce) {
-                shell.exec("git", "push", "origin", localBranch + ":" + gitBranch, "--force", "--set-upstream");
+            final ShellExecutor.Result commitResult = shell.execWithResult("git", "commit", "-am", String.format(commitMessage, fileCount));
+            if (commitResult.getExitCode() == 0) {
+                // push or push-force
+                if (pushForce) {
+                    shell.exec("git", "push", "origin", localBranch + ":" + gitBranch, "--force", "--set-upstream");
+                } else {
+                    shell.exec("git", "push", "origin", localBranch + ":" + gitBranch);
+                }
+            } else if (commitResult.stdoutContains(Pattern.compile("nothing to commit.*"))) {
+                getLog().info("Nothing to commit");
             } else {
-                shell.exec("git", "push", "origin", localBranch + ":" + gitBranch);
+                throw new MojoExecutionException(String.format("git commit exited with code %d", commitResult.getExitCode()));
             }
 
         } catch (CommandLineException e) {
@@ -194,17 +197,6 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
         } catch (IOException e) {
             throw new MojoExecutionException("git publishing error", e);
         }
-    }
-
-    private boolean containsMessage(List<String> stderrLines, Pattern message) {
-        for (String line : stderrLines) {
-            final String lline = line.toLowerCase();
-            final Matcher matcher = message.matcher(lline);
-            if (matcher.matches()) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private static void updateIndex(File indexFile, String newSubcontext) throws IOException {
@@ -241,14 +233,14 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
         });
         shell.setStderr(new StreamConsumer() {
             public void consumeLine(String line) {
-                getLog().warn(line);
-                filelog("WARN", line);
+                getLog().error(line);
+                filelog("ERROR", line);
             }
         });
         shell.setStdout(new StreamConsumer() {
             public void consumeLine(String line) {
-                getLog().debug(line);
-                filelog("DEBUG", line);
+                getLog().warn(line);
+                filelog("WARN", line);
             }
         });
         shell.setWorkingDirectory(inputDirectory);

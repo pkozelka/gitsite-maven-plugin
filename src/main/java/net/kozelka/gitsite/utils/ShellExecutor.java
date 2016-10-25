@@ -3,6 +3,8 @@ package net.kozelka.gitsite.utils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.codehaus.plexus.util.cli.Commandline;
@@ -90,5 +92,25 @@ public class ShellExecutor {
         public List<String> getStderrLines() {
             return stderrLines;
         }
+
+        public boolean stdoutContains(Pattern message) {
+            return contains(stdoutLines, message);
+        }
+
+        public boolean stderrContains(Pattern message) {
+            return contains(stderrLines, message);
+        }
+
+        private boolean contains(List<String> lines, Pattern message) {
+            for (String line : lines) {
+                final String lline = line.toLowerCase();
+                final Matcher matcher = message.matcher(lline);
+                if (matcher.matches()) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
     }
 }
