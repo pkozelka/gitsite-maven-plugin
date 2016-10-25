@@ -9,6 +9,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import net.kozelka.gitsite.utils.ShellExecutor;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -131,27 +133,18 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
             boolean needClone = keepHistory || !subcontext.equals("");
             final String localBranch;
             if (needClone) {
-                final ShellExecutor.Result cloneResult = new ShellExecutor.Result();
-                shell.execWithResult(cloneResult, "git", "clone", "--branch", gitBranch, "--single-branch", gitRemoteUrl, ".");
+                final ShellExecutor.Result cloneResult = shell.execWithResult("git", "clone", "--branch", gitBranch, "--single-branch", gitRemoteUrl, ".");
                 if (cloneResult.getExitCode() == 0) {
                     localBranch = gitBranch;
                 } else {
-                    localBranch = "master";
-                    boolean networkProblem = true;
-                    for (String line : cloneResult.getStderrLines()) {
-                        final String lline = line.toLowerCase();
-                        if (lline.contains("Could not find remote branch")
-                            || lline.contains(" not found in upstream ")) {
-                            getLog().info(String.format("Branch '%s' does not exist in '%s' - will be created",
-                                gitBranch, gitRemoteUrl));
-                            pushForce = true;
-                            networkProblem = false;
-                            break;
-                        }
-                    }
-                    if (networkProblem) {
+                    boolean branchNotFound = containsMessage(cloneResult.getStderrLines(),
+                        Pattern.compile("could not find remote branch\\| not found in upstream "));
+                    if (! branchNotFound) {
                         throw new MojoExecutionException(String.format("git exited with code %d", cloneResult.getExitCode()));
                     }
+                    getLog().info(String.format("Branch '%s' does not exist in '%s' - will be created", gitBranch, gitRemoteUrl));
+                    pushForce = true;
+                    localBranch = "master";
                 }
             } else {
                 shell.exec("git", "init");
@@ -201,6 +194,17 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
         } catch (IOException e) {
             throw new MojoExecutionException("git publishing error", e);
         }
+    }
+
+    private boolean containsMessage(List<String> stderrLines, Pattern message) {
+        for (String line : stderrLines) {
+            final String lline = line.toLowerCase();
+            final Matcher matcher = message.matcher(lline);
+            if (matcher.matches()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void updateIndex(File indexFile, String newSubcontext) throws IOException {

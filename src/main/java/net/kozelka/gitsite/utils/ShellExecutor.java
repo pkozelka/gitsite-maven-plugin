@@ -46,6 +46,12 @@ public class ShellExecutor {
         }
     }
 
+    public Result execWithResult(String executable, String... args) throws CommandLineException {
+        final Result result = new Result();
+        execWithResult(result, executable, args);
+        return result;
+    }
+
     public void execWithResult(final Result result, String executable, String... args) throws CommandLineException {
         final Commandline cl = new Commandline();
         cl.setWorkingDirectory(workingDirectory);
