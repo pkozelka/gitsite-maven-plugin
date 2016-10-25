@@ -161,7 +161,7 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
 
 
             // move site to the subcontext
-            final File targetArea = new File(workDir, "." + subcontext).getCanonicalFile();
+            final File targetArea = new File(workDir, subcontext).getCanonicalFile();
             targetArea.mkdirs();
             getLog().debug("Moving site into " + targetArea);
             final StringBuilder excludes = new StringBuilder(".git/**");
