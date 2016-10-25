@@ -38,10 +38,11 @@ public class ShellExecutor {
         }
         cl.setExecutable(executable);
         cl.addArguments(args);
-        info.consumeLine(String.format("Executing: %s", cl.toString()));
+        final int clHash = cl.toString().hashCode();
+        info.consumeLine(String.format("Executing: %s [#%x]", cl.toString(), clHash));
         final int exitCode = CommandLineUtils.executeCommandLine(cl, stdout, stderr);
         if (exitCode != 0) {
-            throw new CommandLineException(String.format("%s returned with exit code '%d'", executable, exitCode));
+            throw new CommandLineException(String.format("%s [#%x] returned with exit code '%d'", executable, clHash, exitCode));
         }
     }
 
