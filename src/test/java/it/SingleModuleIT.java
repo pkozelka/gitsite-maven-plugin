@@ -9,9 +9,9 @@ import org.codehaus.plexus.util.cli.CommandLineException;
  * Created by Petr Kozelka.
  */
 public class SingleModuleIT {
-    public static boolean prepare(File basedir, File localRepositoryPath, Map<String,String> context) throws CommandLineException, IOException {
+    public static boolean prepare(File basedir, File localRepositoryPath, String branchName, Map<String,String> context) throws CommandLineException, IOException {
         final File gitwc = new File(basedir, "target/gitsiterepo");
-        IntegrationTestUtils.createGitRepo(gitwc, "singlemodule/gitsite");
+        IntegrationTestUtils.createGitRepo(gitwc, branchName);
         return true;
     }
 
