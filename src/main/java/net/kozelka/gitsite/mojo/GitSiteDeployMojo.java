@@ -75,7 +75,7 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
      * Sample use-cases are <b>multiple versions</b> and <b>Bitbucket hosting</b>.
      * </p>
      */
-    @Parameter(defaultValue = "", property = "gitsite.subcontext")
+    @Parameter(property = "gitsite.subcontext")
     String subcontext;
 
     /**
@@ -128,28 +128,19 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
             subcontext = subcontext == null ? "" : subcontext;
 
             // clone or init site.wc
-            // - clone only if keepHistory or subcontext
-            boolean needClone = keepHistory || !subcontext.equals("");
             final String localBranch;
-            if (needClone) {
-                final ShellExecutor.Result cloneResult = shell.execWithResult("git", "clone", "--branch", gitBranch, "--single-branch", gitRemoteUrl, ".");
-                if (cloneResult.getExitCode() == 0) {
-                    localBranch = gitBranch;
-                } else {
-                    boolean branchNotFound = cloneResult.stderrContains(Pattern.compile(".*could not find remote branch.*\\|.* not found in upstream .*"));
-                    if (! branchNotFound) {
-                        throw new MojoExecutionException(String.format("git exited with code %d", cloneResult.getExitCode()));
-                    }
-                    getLog().info(String.format("Branch '%s' does not exist in '%s' - will be created", gitBranch, gitRemoteUrl));
-                    pushForce = true;
-                    localBranch = "master";
-                }
+            final ShellExecutor.Result cloneResult = shell.execWithResult("git", "clone", "--branch", gitBranch, "--single-branch", gitRemoteUrl, ".");
+            if (cloneResult.getExitCode() == 0) {
+                localBranch = gitBranch;
             } else {
-                shell.exec("git", "init");
-                shell.exec("git", "remote", "add", "origin", gitRemoteUrl);
+                boolean branchNotFound = cloneResult.stderrContains(Pattern.compile(".*could not find remote branch.*\\|.* not found in upstream .*"));
+                if (! branchNotFound) {
+                    throw new MojoExecutionException(String.format("git exited with code %d", cloneResult.getExitCode()));
+                }
+                getLog().info(String.format("Branch '%s' does not exist in '%s' - will be created", gitBranch, gitRemoteUrl));
+                pushForce = true;
                 localBranch = "master";
             }
-
 
             // move site to the subcontext
             final File targetArea = new File(workDir, subcontext).getCanonicalFile();
