@@ -45,6 +45,7 @@
             <item name="Overview" href="index.html"/>
             <item name="Usage" href="usage.html"/>
             <item name="Goals" href="plugin-info.html"/>
+            <item name="Configuring for site with multiple versions" href="versions.html"/>
         </menu>
         <menu name="Reports" ref="reports"/>
     </body>

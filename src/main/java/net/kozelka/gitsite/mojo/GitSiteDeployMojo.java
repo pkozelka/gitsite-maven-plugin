@@ -74,6 +74,7 @@ public class GitSiteDeployMojo extends AbstractMultiModuleMojo {
      * Typically, we place content on the root. However, in some cases, we need to keep multiple static sites under one git-based hosting.
      * Sample use-cases are <b>multiple versions</b> and <b>Bitbucket hosting</b>.
      * </p>
+     * @since 0.1.2
      */
     @Parameter(property = "gitsite.subcontext")
     String subcontext;
